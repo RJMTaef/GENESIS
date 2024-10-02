@@ -29,25 +29,25 @@ app.get('/api/config/paypal', (req, res) =>
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
 );
 
-if (process.env.NODE_ENV === 'production') {
-  const __dirname = path.resolve();
-  app.use('/uploads', express.static('/var/data/uploads'));
-  app.use(express.static(path.join(__dirname, '/frontend/build')));
+const __dirname = path.resolve();
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-  app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-  );
-} else {
-  const __dirname = path.resolve();
-  app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
-  app.get('/', (req, res) => {
-    res.send('API is running....');
-  });
-}
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, 'frontend/build')));
+
+// API test route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Server is working correctly' });
+});
+
+// Anything that doesn't match the above, send back index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
 
 app.use(notFound);
 app.use(errorHandler);
 
 app.listen(port, () =>
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`)
 );
